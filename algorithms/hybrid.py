@@ -52,6 +52,34 @@ def create_hybrid(image_a, image_b, sigma_low, sigma_high, method='fft', high_bo
     )
 
 
+def compute_auto_params(image_a, image_b, method='fft'):
+    """
+    Automatically compute sigma and boost for a given image pair.
+
+    Sigma is scaled so it behaves like sigma=10 on an 800px image,
+    regardless of the actual image resolution.
+
+    Boost is computed by equalising the energy (std dev) of the low-pass
+    and high-pass layers so both contribute equally to the hybrid.
+
+    Returns (sigma_low, sigma_high, boost) as floats.
+    """
+    h, w = image_a.shape[:2]
+    ref = min(w, h)
+    sigma = float(max(5, round(10 * ref / 800)))
+
+    low  = _low_pass_fft(image_a, sigma)  if method == 'fft' else low_pass_filter(image_a, sigma)
+    high = _high_pass_fft(image_b, sigma) if method == 'fft' else high_pass_filter(image_b, sigma)
+
+    std_low  = float(np.std(low))
+    std_high = float(np.std(high))
+
+    boost = round(std_low / std_high, 1) if std_high > 1e-8 else 1.0
+    boost = float(np.clip(boost, 0.5, 3.0))
+
+    return sigma, sigma, boost
+
+
 def sigma_sweep(image_a, image_b, sigma_values, method='fft'):
     """
     Generate hybrid images for each sigma in sigma_values (same value used for

@@ -8,12 +8,12 @@ st.set_page_config(page_title="HybridVision", layout="wide")
 st.title("HybridVision")
 st.caption("Frequency-Domain Dual-Perception Image Synthesis — CS-712 Term Project")
 
-# ── Session state defaults ────────────────────────────────────────────────────
+
 if "sigma_low"  not in st.session_state: st.session_state["sigma_low"]  = 10.0
 if "sigma_high" not in st.session_state: st.session_state["sigma_high"] = 10.0
 if "high_boost" not in st.session_state: st.session_state["high_boost"] = 1.0
 
-# ── Sidebar: uploaders & method (must come before st.stop) ───────────────────
+
 with st.sidebar:
     st.header("Upload Images")
     file_a = st.file_uploader("Image A  —  seen from far away", type=["jpg", "jpeg", "png"])
@@ -29,12 +29,12 @@ if not file_a or not file_b:
     st.info("Upload both images in the sidebar to get started.")
     st.stop()
 
-# ── Load images early so auto-compute can use them before sliders render ──────
+
 img_a = load_image(file_a, grayscale=grayscale)
 img_b = load_image(file_b, grayscale=grayscale)
 img_a, img_b = resize_to_match(img_a, img_b)
 
-# ── Auto-compute runs here — before sliders are rendered ─────────────────────
+
 if st.session_state.get("_run_auto"):
     with st.spinner("Analysing images…"):
         a_sl, a_sh, a_boost = compute_auto_params(img_a, img_b, method=conv_method)
@@ -43,7 +43,7 @@ if st.session_state.get("_run_auto"):
     st.session_state["high_boost"] = a_boost
     st.session_state["_run_auto"]  = False
 
-# ── Sidebar: sliders rendered after potential auto-update ─────────────────────
+
 with st.sidebar:
     st.divider()
     st.header("Parameters")
@@ -62,16 +62,16 @@ with st.sidebar:
         st.session_state["_run_auto"] = True
         st.rerun()
 
-# ── Compute hybrid ────────────────────────────────────────────────────────────
+
 with st.spinner("Computing…"):
     hybrid, low, high_display = create_hybrid(
         img_a, img_b, sigma_low, sigma_high, method=conv_method, high_boost=high_boost
     )
 
-# ── Tabs ──────────────────────────────────────────────────────────────────────
+
 tab1, tab2 = st.tabs(["Hybrid Result", "Sigma Sweep"])
 
-# ── Tab 1: Hybrid Result ──────────────────────────────────────────────────────
+
 with tab1:
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -100,7 +100,7 @@ with tab1:
         mime="image/png",
     )
 
-# ── Tab 2: Sigma Sweep ────────────────────────────────────────────────────────
+
 with tab2:
     st.subheader("Sigma Sweep")
 
